@@ -86,7 +86,7 @@ If there's a **cycle** (A depends on B, B depends on A), the system breaks. DAG 
 
 ---
 
-## 🔷 Topological Sort
+## 🔷 Topological Sort(https://www.geeksforgeeks.org/problems/topological-sort/1)
 
 **Topological Sort** gives a **linear ordering** of vertices such that for every directed edge `u → v`, vertex `u` comes **before** `v`.
 
