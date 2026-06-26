@@ -270,8 +270,8 @@ for(int i = 0; i <= n; i++)
     adj.add(new ArrayList<>());
 
 for(int[] edge : edges) {
-    adj.get(edge[0]).add(new int[]{edge[1], edge[2]});
-    adj.get(edge[1]).add(new int[]{edge[0], edge[2]});
+    adj.get(edge[0]).add(new int[]{edge[1], edge[2]});//single - directed graph
+    adj.get(edge[1]).add(new int[]{edge[0], edge[2]});//add if bi-directed graph
 }
 
 📊 What gets stored
