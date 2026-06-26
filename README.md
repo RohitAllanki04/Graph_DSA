@@ -261,3 +261,27 @@ private void dfs(int node, boolean[] visited,
 | **Time Complexity** | O(V + E) | O(V + E) |
 
 ---
+```
+// edges = [[2,1,1],[2,3,1],[3,4,1]]
+// n = 4
+
+List<List<int[]>> adj = new ArrayList<>();
+for(int i = 0; i <= n; i++)
+    adj.add(new ArrayList<>());
+
+for(int[] edge : edges) {
+    adj.get(edge[0]).add(new int[]{edge[1], edge[2]});
+    adj.get(edge[1]).add(new int[]{edge[0], edge[2]});
+}
+
+📊 What gets stored
+Input: [[2,1,1],[2,3,1],[3,4,1]]
+
+adj[0] = []
+adj[1] = [[2,1]]
+adj[2] = [[1,1],[3,1]]
+adj[3] = [[2,1],[4,1]]
+adj[4] = [[3,1]]
+
+```
+
