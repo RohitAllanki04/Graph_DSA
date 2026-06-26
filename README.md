@@ -284,4 +284,281 @@ adj[3] = [[2,1],[4,1]]
 adj[4] = [[3,1]]
 
 ```
-
+---
+ 
+## 🔷 Dijkstra's Algorithm — Shortest Path
+ 
+### 💡 When to Use?
+> When you need to find the **shortest path** from a **single source** to all other vertices in a **weighted directed graph**.
+ 
+Real world examples:
+- **Network delay** — minimum time for signal to reach all nodes
+- **GPS navigation** — shortest route from A to B
+- **Flight routes** — cheapest path between cities
+---
+ 
+### 💡 Intuition
+ 
+```
+Always process the NEAREST unvisited vertex first
+→ greedy approach using Min Heap (Priority Queue)
+→ once a vertex is processed with minimum distance, it's final
+→ keep relaxing neighbors if shorter path found
+```
+ 
+---
+ 
+### 📋 Steps
+ 
+```
+1. Create a Min Heap (Priority Queue) — stores [vertex, distance]
+   → always picks vertex with LEAST distance first
+ 
+2. Create dist[] array — fill with MAX_INTEGER (unreachable)
+   → dist[source] = 0 (distance to itself is 0)
+ 
+3. Offer source vertex into queue with distance 0
+ 
+4. While queue is not empty:
+      a. Poll [vertex, distance] from queue (minimum distance first)
+      b. If current distance > dist[vertex] → skip (outdated entry)
+      c. For each neighbor of vertex:
+            - newDist = dist[vertex] + edge weight
+            - If newDist < dist[neighbor]:
+                  → update dist[neighbor] = newDist
+                  → offer [neighbor, newDist] into queue
+ 
+5. Finally:
+      → dist[] holds shortest distance from source to every vertex
+      → if any dist[i] == MAX_INTEGER → vertex unreachable → return -1
+      → max of dist[] = minimum time for ALL nodes to receive signal
+```
+ 
+---
+ 
+### 🖼️ Visual Walkthrough
+ 
+```
+Graph: k=1 (source)
+1 →(2)→ 2
+1 →(4)→ 3
+2 →(1)→ 3
+ 
+dist = [MAX, 0, MAX, MAX]   ← dist[1]=0 (source)
+pq   = [{1,0}]
+ 
+Step 1: poll {1,0}
+  neighbor 2: dist[1]+2=2 < MAX → dist[2]=2, offer {2,2}
+  neighbor 3: dist[1]+4=4 < MAX → dist[3]=4, offer {3,4}
+  pq = [{2,2},{3,4}]
+ 
+Step 2: poll {2,2}  ← min distance first!
+  neighbor 3: dist[2]+1=3 < dist[3]=4 → dist[3]=3, offer {3,3}
+  pq = [{3,3},{3,4}]
+ 
+Step 3: poll {3,3}
+  no neighbors
+  pq = [{3,4}]
+ 
+Step 4: poll {3,4}
+  4 > dist[3]=3 → SKIP (outdated)
+ 
+dist = [MAX, 0, 2, 3]
+max  = 3 ✅
+```
+ 
+---
+ 
+### 💻 Java Code
+ 
+```java
+public int networkDelayTime(int[][] times, int n, int k) {
+    // Step 1: Build adjacency list [neighbor, weight]
+    List<List<int[]>> adj = new ArrayList<>();
+    for(int i = 0; i <= n; i++)
+        adj.add(new ArrayList<>());
+ 
+    for(int[] edge : times)
+        adj.get(edge[0]).add(new int[]{edge[1], edge[2]});
+ 
+    // Step 2: dist array — fill MAX, source = 0
+    int[] dist = new int[n+1];
+    Arrays.fill(dist, Integer.MAX_VALUE);
+    dist[k] = 0;
+ 
+    // Step 3: Min heap [vertex, distance]
+    PriorityQueue<int[]> pq = new PriorityQueue<>((a,b) -> a[1]-b[1]);
+    pq.offer(new int[]{k, 0});
+ 
+    // Step 4: Process queue
+    while(!pq.isEmpty()) {
+        int[] cur  = pq.poll();
+        int node   = cur[0];
+        int d      = cur[1];
+ 
+        if(d > dist[node]) continue;       // skip outdated entry
+ 
+        for(int[] nei : adj.get(node)) {
+            int neighbor = nei[0];
+            int weight   = nei[1];
+ 
+            if(dist[node] + weight < dist[neighbor]) {
+                dist[neighbor] = dist[node] + weight;          // update
+                pq.offer(new int[]{neighbor, dist[neighbor]}); // offer
+            }
+        }
+    }
+ 
+    // Step 5: Find max of dist[]
+    int maxDist = 0;
+    for(int i = 1; i <= n; i++) {
+        if(dist[i] == Integer.MAX_VALUE) return -1;  // unreachable
+        maxDist = Math.max(maxDist, dist[i]);
+    }
+    return maxDist;
+}
+```
+ 
+---
+ 
+### ⏱️ Complexity
+ 
+| | Dijkstra |
+|---|---|
+| **Time** | O((V + E) log V) |
+| **Space** | O(V + E) |
+ 
+---
+ 
+### 📊 Key Points to Remember
+ 
+| Concept | Explanation |
+|---------|-------------|
+| Min Heap | always picks shortest distance vertex first |
+| `dist[]=MAX` | means unreachable initially |
+| `d > dist[node]` | skip outdated entries in queue |
+| Update neighbor | only if new path is shorter |
+| Final answer | max of all `dist[]` values |
+| Unreachable | if any `dist[i]==MAX` → return -1 |
+ 
+---
+ 
+### ❌ Why not DFS/BFS for shortest path?
+ 
+```
+DFS → goes deep, not shortest path, can't compare paths ❌
+BFS → works only for UNWEIGHTED graphs ❌
+Dijkstra → always finds shortest in WEIGHTED graphs ✅
+```
+ 
+---
+ 
+## 🟨 Dijkstra — Alternative using Set (Visited)
+ 
+### 💡 Idea
+Instead of `if(d > dist[v]) continue` — use a **Set** to track already processed vertices and skip them.
+ 
+---
+ 
+### ⚠️ Why NOT `Set<int[]>`
+ 
+```java
+Set<int[]> set = new HashSet<>();
+int[] a = {1, 2};
+int[] b = {1, 2};
+set.add(a);
+set.add(b);  // ← ADDED as duplicate! NOT blocked!
+// int[] uses reference equality, not content equality
+// so two arrays with same values = different objects
+```
+ 
+### ✅ Use `Set<Integer>` — store vertex number only
+ 
+```java
+Set<Integer> visited = new HashSet<>();  // ✅ correct
+```
+ 
+---
+ 
+### 📊 Set Types — Quick Reference
+ 
+| Set | Order | Speed | Use When |
+|-----|-------|-------|----------|
+| `HashSet` | none | O(1) | fast lookup, no order needed |
+| `LinkedHashSet` | insertion order | O(1) | maintain insertion order |
+| `TreeSet` | sorted order | O(log n) | need sorted order |
+ 
+---
+ 
+### 💻 Complete Code — Dijkstra with Set
+ 
+```java
+class Solution {
+    public int networkDelayTime(int[][] times, int n, int k) {
+        // Build adjacency list
+        List<List<int[]>> adj = new ArrayList<>();
+        for(int i = 0; i <= n; i++)
+            adj.add(new ArrayList<>());
+ 
+        for(int[] edge : times)
+            adj.get(edge[0]).add(new int[]{edge[1], edge[2]});
+ 
+        // dist array
+        int[] dist = new int[n+1];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[k] = 0;
+ 
+        // Min heap [vertex, distance]
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a,b) -> a[1]-b[1]);
+        pq.offer(new int[]{k, 0});
+ 
+        // ✅ Set to track processed vertices
+        Set<Integer> visited = new HashSet<>();
+ 
+        while(!pq.isEmpty()) {
+            int[] cur = pq.poll();
+            int node  = cur[0];
+            int d     = cur[1];
+ 
+            if(visited.contains(node)) continue;  // ✅ skip already processed
+            visited.add(node);                    // ✅ mark as processed
+ 
+            for(int[] nei : adj.get(node)) {
+                int neighbor = nei[0];
+                int weight   = nei[1];
+ 
+                if(!visited.contains(neighbor)) {             // skip processed
+                    if(dist[node] + weight < dist[neighbor]) {
+                        dist[neighbor] = dist[node] + weight;
+                        pq.offer(new int[]{neighbor, dist[neighbor]});
+                    }
+                }
+            }
+        }
+ 
+        // Find max distance
+        int maxDist = 0;
+        for(int i = 1; i <= n; i++) {
+            if(dist[i] == Integer.MAX_VALUE) return -1;
+            maxDist = Math.max(maxDist, dist[i]);
+        }
+        return maxDist;
+    }
+}
+```
+ 
+---
+ 
+### 📊 Two Approaches Compared
+ 
+| | `d > dist[v]` check | `Set<Integer>` visited |
+|---|---|---|
+| **Skip condition** | outdated distance | already processed node |
+| **How it works** | compare weight vs dist | contains check in Set |
+| **Duplicates in pq** | allowed, skipped later | never processed twice |
+| **Code complexity** | simpler ✅ | slightly more code |
+| **Performance** | same O((V+E) log V) | same O((V+E) log V) |
+ 
+> Both approaches are correct! `d > dist[v]` is cleaner and more commonly used in competitive programming.
+ 
+---
